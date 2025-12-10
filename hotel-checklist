@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contrôle Conformité Chambres</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="text/babel">
+        import React, { useState } from ‘react’;
+import { Download, ChevronLeft, ChevronRight, Check, AlertCircle, BarChart3 } from ‘lucide-react’;
+
+const HotelRoomChecklist = () => {
+// Génération de la liste des chambres
+const generateRoomList = () => {
+const rooms = [];
+// 001 à 012
+for (let i = 1; i <= 12; i++) {
+rooms.push(String(i).padStart(3, ‘0’));
+}
+// 101 à 117
+for (let i = 101; i <= 117; i++) {
+rooms.push(String(i));
+}
+// 201 à 211
+for (let i = 201; i <= 211; i++) {
+rooms.push(String(i));
+}
+return rooms;
+};
+
+const roomList = generateRoomList();
+const [currentRoomIndex, setCurrentRoomIndex] = useState(0);
+const [showSummary, setShowSummary] = useState(false);
+const [saveStatus, setSaveStatus] = useState(null);
+
+const initialChecklist = {
+‘Salle de bain’: [
+‘Douche/Baignoire état’,
+‘Robinetterie fonctionnelle’,
+‘Pommeau de douche’,
+‘Rideau/Paroi de douche’,
+‘Lavabo état’,
+‘Miroir état’,
+‘Éclairage fonctionnel’,
+‘Interrupteur’,
+‘Sèche-cheveux’,
+‘Radiateur’,
+‘Distributeur savon’,
+‘Murs état’,
+‘Sol état’,
+‘Ventilation/Aération’,
+‘Poubelle SDB’
+],
+‘WC’: [
+‘Cuvette WC état’,
+‘Lunette de toilette’,
+‘Chasse d'eau fonctionnelle’,
+‘Lumière WC’,
+‘Interrupteur WC’,
+‘Porte WC’,
+‘Murs WC état’,
+‘Sol WC état’,
+‘Distributeur papier toilette’,
+‘Brosse WC’,
+‘Poubelle’
+],
+‘Chambre’: [
+‘Roulettes du lit’,
+‘Table de chevet (x2)’,
+‘Lampe de chevet (x2)’,
+‘Table d'appoint’,
+‘Fauteuil(s)’,
+‘TV fonctionnelle’,
+‘Télécommande TV’,
+‘Bureau/Secrétaire’,
+‘Armoire/Penderie’,
+‘Cintres’,
+‘Coffre-fort’,
+‘Minibar’,
+‘Bouilloire/Machine à café’,
+‘Téléphone’,
+‘Climatisation/Chauffage’,
+‘Rideaux/Voilages’,
+‘Fenêtres état’,
+‘Murs état’,
+‘Sol état’,
+‘Poubelle’,
+‘Prises électriques fonctionnelles’,
+‘Éclairage principal’,
+‘Porte d'entrée et serrure’
+],
+‘Terrasse’: [
+‘Chaise 1’,
+‘Chaise 2’,
+‘Table’,
+‘Cendrier’,
+‘Sol état’,
+‘Balustrade sécurisée’
+],
+‘Mezzanine’: [
+‘Lit/Couchage état’,
+‘Literie complète’,
+‘Escalier sécurisé’,
+‘Garde-corps’,
+‘Éclairage’,
+‘Sol état’,
+‘Rangement’
+]
+};
+
+// État pour toutes les chambres
+const [roomsData, setRoomsData] = useState(() => {
+const initial = {};
+roomList.forEach(room => {
+initial[room] = {
+hasMezzanine: false,
+checkStatus: {},
+comments: {},
+completed: false,
+inspectorName: ‘’,
+inspectionDate: new Date().toISOString().split(‘T’)[0],
+resolutions: {} // {key: {resolved: true, resolvedBy: ‘’, resolvedDate: ‘’}}
+};
+});
+return initial;
+});
+
+const currentRoom = roomList[currentRoomIndex];
+const currentData = roomsData[currentRoom];
+
+const handleCheck = (section, item, status) => {
+setRoomsData(prev => ({
+…prev,
+[currentRoom]: {
+…prev[currentRoom],
+checkStatus: {
+…prev[currentRoom].checkStatus,
+[`${section}-${item}`]: status
+}
+}
+}));
+};
+
+const handleComment = (section, item, comment) => {
+setRoomsData(prev => ({
+…prev,
+[currentRoom]: {
+…prev[currentRoom],
+comments: {
+…prev[currentRoom].comments,
+[`${section}-${item}`]: comment
+}
+}
+}));
+};
+
+const handleMezzanine = (value) => {
+setRoomsData(prev => ({
+…prev,
+[currentRoom]: {
+…prev[currentRoom],
+hasMezzanine: value
+}
+}));
+};
+
+const handleInspectorName = (value) => {
+setRoomsData(prev => ({
+…prev,
+[currentRoom]: {
+…prev[currentRoom],
+inspectorName: value
+}
+}));
+};
+
+const handleInspectionDate = (value) => {
+setRoomsData(prev => ({
+…prev,
+[currentRoom]: {
+…prev[currentRoom],
+inspectionDate: value
+}
+}));
+};
+
+const handleResolution = (section, item, field, value) => {
+const key = `${section}-${item}`;
+setRoomsData(prev => ({
+…prev,
+[currentRoom]: {
+…prev[currentRoom],
+resolutions: {
+…prev[currentRoom].resolutions,
+[key]: {
+…prev[currentRoom].resolutions[key],
+[field]: value
+}
+}
+}
+}));
+};
+
+const toggleResolved = (section, item) => {
+const key = `${section}-${item}`;
+const currentResolution = currentData.resolutions[key] || {};
+const isResolved = currentResolution.resolved || false;
+
+```
+setRoomsData(prev => ({
+  ...prev,
+  [currentRoom]: {
+    ...prev[currentRoom],
+    resolutions: {
+      ...prev[currentRoom].resolutions,
+      [key]: {
+        ...currentResolution,
+        resolved: !isResolved,
+        resolvedDate: !isResolved ? new Date().toISOString().split('T')[0] : (currentResolution.resolvedDate || ''),
+        resolvedBy: currentResolution.resolvedBy || ''
+      }
+    }
+  }
+}));
+```
+
+};
+
+const markRoomComplete = () => {
+setRoomsData(prev => ({
+…prev,
+[currentRoom]: {
+…prev[currentRoom],
+completed: true
+}
+}));
+};
+
+const getStats = (roomData, hasMezzanine) => {
+let total = 0;
+let checked = 0;
+let conformes = 0;
+let nonConformes = 0;
+
+```
+Object.entries(initialChecklist).forEach(([section, items]) => {
+  if (section === 'Mezzanine' && !hasMezzanine) return;
+  items.forEach(item => {
+    total++;
+    const key = `${section}-${item}`;
+    const status = roomData.checkStatus[key];
+    if (status) {
+      checked++;
+      if (status === 'ok') conformes++;
+      if (status === 'nok') nonConformes++;
+    }
+  });
+});
+
+return { total, checked, conformes, nonConformes };
+```
+
+};
+
+const currentStats = getStats(currentData, currentData.hasMezzanine);
+
+const getGlobalStats = () => {
+let totalRooms = roomList.length;
+let completedRooms = 0;
+let totalProblems = 0;
+
+```
+roomList.forEach(room => {
+  const data = roomsData[room];
+  if (data.completed) completedRooms++;
+  const stats = getStats(data, data.hasMezzanine);
+  totalProblems += stats.nonConformes;
+});
+
+return { totalRooms, completedRooms, totalProblems };
+```
+
+};
+
+const globalStats = getGlobalStats();
+
+const resetAllData = async () => {
+if (window.confirm(‘⚠️ ATTENTION : Voulez-vous vraiment effacer toutes les données de toutes les chambres ? Cette action est irréversible.’)) {
+try {
+localStorage.removeItem(‘hotel-rooms-data’);
+setRoomsData(getInitialData());
+alert(‘✓ Toutes les données ont été effacées’);
+} catch (error) {
+alert(‘Erreur lors de la suppression des données’);
+}
+}
+};
+
+const exportData = () => {
+try {
+const dataStr = JSON.stringify(roomsData, null, 2);
+const blob = new Blob([dataStr], { type: ‘application/json’ });
+const url = URL.createObjectURL(blob);
+const link = document.createElement(‘a’);
+link.href = url;
+link.download = `hotel-data-${new Date().toISOString().split('T')[0]}.json`;
+document.body.appendChild(link);
+link.click();
+document.body.removeChild(link);
+URL.revokeObjectURL(url);
+alert(‘✓ Données exportées avec succès’);
+} catch (error) {
+alert(‘Erreur lors de l'export’);
+}
+};
+
+const importData = () => {
+const input = document.createElement(‘input’);
+input.type = ‘file’;
+input.accept = ‘application/json’;
+input.onchange = (e) => {
+const file = e.target.files[0];
+if (file) {
+const reader = new FileReader();
+reader.onload = (event) => {
+try {
+const imported = JSON.parse(event.target.result);
+setRoomsData(imported);
+alert(‘✓ Données importées avec succès’);
+} catch (error) {
+alert(‘⚠ Fichier invalide’);
+}
+};
+reader.readAsText(file);
+}
+};
+input.click();
+};
+
+if (isLoading) {
+return (
+<div className="min-h-screen bg-gray-50 flex items-center justify-center">
+<div className="text-center bg-white p-8 rounded-lg shadow-lg">
+<div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+<div className="text-2xl font-bold text-gray-800 mb-2">Chargement des données…</div>
+<div className="text-gray-600">Veuillez patienter</div>
+</div>
+</div>
+);
+}
+
+const goToNextRoom = () => {
+if (currentRoomIndex < roomList.length - 1) {
+setCurrentRoomIndex(currentRoomIndex + 1);
+}
+};
+
+const goToPreviousRoom = () => {
+if (currentRoomIndex > 0) {
+setCurrentRoomIndex(currentRoomIndex - 1);
+}
+};
+
+const goToRoom = (index) => {
+setCurrentRoomIndex(index);
+setShowSummary(false);
+};
+
+const getSummaryData = () => {
+const summary = {};
+
+```
+// Initialiser avec tous les points de contrôle
+Object.entries(initialChecklist).forEach(([section, items]) => {
+  items.forEach(item => {
+    const key = `${section}-${item}`;
+    summary[key] = {
+      section,
+      item,
+      totalIssues: 0,
+      unresolvedIssues: 0,
+      rooms: []
+    };
+  });
+});
+
+// Parcourir toutes les chambres pour compter les problèmes
+roomList.forEach(room => {
+  const data = roomsData[room];
+  
+  Object.entries(initialChecklist).forEach(([section, items]) => {
+    if (section === 'Mezzanine' && !data.hasMezzanine) return;
+    
+    items.forEach(item => {
+      const key = `${section}-${item}`;
+      const status = data.checkStatus[key];
+      const comment = data.comments[key] || '';
+      const resolution = data.resolutions[key] || {};
+      
+      if (status === 'nok' || comment.trim() !== '') {
+        summary[key].totalIssues++;
+        summary[key].rooms.push({
+          room,
+          status,
+          comment,
+          resolved: resolution.resolved || false,
+          resolvedBy: resolution.resolvedBy || '',
+          resolvedDate: resolution.resolvedDate || ''
+        });
+        
+        if (!resolution.resolved) {
+          summary[key].unresolvedIssues++;
+        }
+      }
+    });
+  });
+});
+
+// Filtrer pour ne garder que les points avec des problèmes
+const filteredSummary = Object.entries(summary)
+  .filter(([key, data]) => data.totalIssues > 0)
+  .sort((a, b) => b[1].unresolvedIssues - a[1].unresolvedIssues);
+
+return filteredSummary;
+```
+
+};
+
+const exportGlobalReport = () => {
+let csvContent = “Chambre,Inspecteur,Date,Section,Élément,Statut,Commentaire,Résolu,Résolu par,Date résolution\n”;
+
+```
+roomList.forEach(room => {
+  const data = roomsData[room];
+  let hasProblems = false;
+  
+  Object.entries(initialChecklist).forEach(([section, items]) => {
+    if (section === 'Mezzanine' && !data.hasMezzanine) return;
+    
+    items.forEach(item => {
+      const key = `${section}-${item}`;
+      const status = data.checkStatus[key];
+      const comment = data.comments[key] || '';
+      const resolution = data.resolutions[key] || {};
+      
+      if (status === 'nok' || comment.trim() !== '') {
+        hasProblems = true;
+        const statusText = status === 'nok' ? 'NOK' : status === 'ok' ? 'OK' : 'N/A';
+        const resolvedText = resolution.resolved ? 'Oui' : 'Non';
+        const resolvedBy = resolution.resolvedBy || '';
+        const resolvedDate = resolution.resolvedDate || '';
+        csvContent += `"${room}","${data.inspectorName}","${data.inspectionDate}","${section}","${item}","${statusText}","${comment}","${resolvedText}","${resolvedBy}","${resolvedDate}"\n`;
+      }
+    });
+  });
+  
+  if (!hasProblems && data.completed) {
+    csvContent += `"${room}","${data.inspectorName}","${data.inspectionDate}","","Aucun problème détecté","","","","",""\n`;
+  }
+});
+
+const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+const link = document.createElement('a');
+const url = URL.createObjectURL(blob);
+link.setAttribute('href', url);
+link.setAttribute('download', `Rapport_Global_${new Date().toISOString().split('T')[0]}.csv`);
+link.style.visibility = 'hidden';
+document.body.appendChild(link);
+link.click();
+document.body.removeChild(link);
+```
+
+};
+
+const exportSummaryPDF = () => {
+const summaryData = getSummaryData();
+const date = new Date().toLocaleDateString(‘fr-FR’);
+
+```
+let htmlContent = `
+```
+
+<!DOCTYPE html>
+
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Récapitulatif par point de contrôle</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+      color: #333;
+    }
+    h1 {
+      color: #1e40af;
+      border-bottom: 3px solid #1e40af;
+      padding-bottom: 10px;
+    }
+    .header {
+      margin-bottom: 30px;
+    }
+    .stats {
+      background-color: #eff6ff;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 30px;
+    }
+    .stat-item {
+      display: inline-block;
+      margin-right: 30px;
+      font-size: 14px;
+    }
+    .stat-number {
+      font-size: 24px;
+      font-weight: bold;
+      color: #1e40af;
+    }
+    .problem-item {
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      page-break-inside: avoid;
+    }
+    .problem-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: 15px;
+      border-bottom: 2px solid #f3f4f6;
+      padding-bottom: 10px;
+    }
+    .problem-title {
+      flex: 1;
+    }
+    .section-name {
+      font-size: 12px;
+      color: #6b7280;
+      margin-bottom: 5px;
+    }
+    .item-name {
+      font-size: 16px;
+      font-weight: bold;
+      color: #111827;
+    }
+    .problem-stats {
+      text-align: right;
+    }
+    .unresolved {
+      font-size: 28px;
+      font-weight: bold;
+      color: #dc2626;
+    }
+    .total {
+      font-size: 14px;
+      color: #ea580c;
+    }
+    .rooms-section {
+      margin-top: 15px;
+    }
+    .rooms-label {
+      font-weight: bold;
+      font-size: 13px;
+      color: #374151;
+      margin-bottom: 8px;
+    }
+    .room-badge {
+      display: inline-block;
+      padding: 5px 12px;
+      margin: 3px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .room-unresolved {
+      background-color: #fee2e2;
+      color: #991b1b;
+    }
+    .room-resolved {
+      background-color: #d1fae5;
+      color: #065f46;
+    }
+    .comments-section {
+      margin-top: 15px;
+      padding: 10px;
+      background-color: #f9fafb;
+      border-radius: 6px;
+    }
+    .comment-item {
+      font-size: 12px;
+      color: #4b5563;
+      margin-bottom: 5px;
+    }
+    .comment-room {
+      font-weight: bold;
+      color: #111827;
+    }
+    .footer {
+      margin-top: 40px;
+      text-align: center;
+      font-size: 11px;
+      color: #6b7280;
+      border-top: 1px solid #e5e7eb;
+      padding-top: 20px;
+    }
+    @media print {
+      body { margin: 20px; }
+      .problem-item { page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Récapitulatif par point de contrôle</h1>
+    <p>Date du rapport : ${date}</p>
+  </div>
+
+  <div class="stats">
+    <div class="stat-item">
+      <div class="stat-number">${globalStats.totalRooms}</div>
+      <div>Chambres totales</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-number">${globalStats.completedRooms}</div>
+      <div>Chambres contrôlées</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-number">${globalStats.totalProblems}</div>
+      <div>Problèmes détectés</div>
+    </div>
+  </div>
+`;
+
+```
+if (summaryData.length === 0) {
+  htmlContent += '<p style="text-align: center; color: #6b7280; padding: 40px;">Aucun problème détecté dans les chambres contrôlées</p>';
+} else {
+  summaryData.forEach(([key, data]) => {
+    htmlContent += `
+```
+
+  <div class="problem-item">
+    <div class="problem-header">
+      <div class="problem-title">
+        <div class="section-name">${data.section}</div>
+        <div class="item-name">${data.item}</div>
+      </div>
+      <div class="problem-stats">
+        <div class="unresolved">${data.unresolvedIssues}</div>
+        <div class="total">sur ${data.totalIssues} total</div>
+      </div>
+    </div>
+
+```
+<div class="rooms-section">
+  <div class="rooms-label">Chambres concernées :</div>
+  <div>
+```
+
+`; data.rooms.forEach(roomData => { const badgeClass = roomData.resolved ? 'room-resolved' : 'room-unresolved'; const resolvedMark = roomData.resolved ? ' ✓' : ''; htmlContent += `        <span class="room-badge ${badgeClass}">${roomData.room}${resolvedMark}</span>\n`;
+});
+
+```
+    htmlContent += `      </div>\n    </div>\n`;
+    
+    const commentsExist = data.rooms.some(r => r.comment);
+    if (commentsExist) {
+      htmlContent += `
+<div class="comments-section">
+  <div class="rooms-label">Commentaires :</div>
+```
+
+`; data.rooms.filter(r => r.comment).forEach(roomData => { htmlContent += `      <div class="comment-item"><span class="comment-room">Ch. ${roomData.room}:</span> ${roomData.comment}</div>\n`; }); htmlContent += `    </div>\n`;
+}
+
+```
+    htmlContent += `  </div>\n`;
+  });
+}
+
+htmlContent += `
+```
+
+  <div class="footer">
+    <p>Rapport généré automatiquement - Système de contrôle de conformité des chambres d'hôtel</p>
+  </div>
+</body>
+</html>
+`;
+
+```
+// Créer un blob et télécharger directement le fichier HTML
+const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+const url = URL.createObjectURL(blob);
+const link = document.createElement('a');
+link.href = url;
+link.download = `Recapitulatif_${new Date().toISOString().split('T')[0]}.html`;
+document.body.appendChild(link);
+link.click();
+document.body.removeChild(link);
+URL.revokeObjectURL(url);
+
+// Afficher un message
+alert('Le fichier HTML a été téléchargé. Ouvrez-le dans votre navigateur puis utilisez Ctrl+P (ou Cmd+P) pour l\'imprimer en PDF.');
+```
+
+};
+
+return (
+<div className="min-h-screen bg-gray-50 p-4 md:p-6">
+<div className="max-w-7xl mx-auto">
+{/* En-tête global */}
+<div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+<div className="flex items-center justify-between mb-4">
+<h1 className="text-3xl font-bold text-gray-800">Contrôle Conformité - Multi-chambres</h1>
+{saveStatus && (
+<span className="text-sm font-medium text-green-600 bg-green-50 px-3 py-1 rounded-full">
+{saveStatus}
+</span>
+)}
+</div>
+
+```
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4 text-sm text-blue-800">
+        <strong>💾 Stockage local activé</strong> - Les données sont sauvegardées automatiquement sur cet appareil. Utilisez Export/Import pour synchroniser entre appareils.
+      </div>
+      
+      {/* Statistiques globales */}
+      <div className="grid grid-cols-3 gap-3 p-4 bg-blue-50 rounded-lg mb-4">
+        <div className="text-center">
+          <div className="text-2xl font-bold text-blue-600">{globalStats.totalRooms}</div>
+          <div className="text-sm text-gray-600">Chambres totales</div>
+        </div>
+        <div className="text-center">
+          <div className="text-2xl font-bold text-green-600">{globalStats.completedRooms}</div>
+          <div className="text-sm text-gray-600">Contrôlées</div>
+        </div>
+        <div className="text-center">
+          <div className="text-2xl font-bold text-red-600">{globalStats.totalProblems}</div>
+          <div className="text-sm text-gray-600">Problèmes détectés</div>
+        </div>
+      </div>
+
+      <button
+        onClick={exportGlobalReport}
+        className="w-full mb-3 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition"
+      >
+        <Download size={20} />
+        Télécharger le rapport global (CSV)
+      </button>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+        <button
+          onClick={() => setShowSummary(!showSummary)}
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition"
+        >
+          <BarChart3 size={20} />
+          {showSummary ? 'Masquer' : 'Récapitulatif'}
+        </button>
+
+        <button
+          onClick={exportSummaryPDF}
+          className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition"
+        >
+          <Download size={20} />
+          Export PDF
+        </button>
+
+        <button
+          onClick={exportData}
+          className="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition"
+        >
+          <Download size={20} />
+          Export Données
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+        <button
+          onClick={importData}
+          className="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-semibold py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition"
+        >
+          📥 Import Données
+        </button>
+
+        <button
+          onClick={resetAllData}
+          className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition"
+        >
+          🗑️ Réinitialiser
+        </button>
+      </div>
+    </div>
+
+    {/* Module récapitulatif */}
+    {showSummary && (
+      <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+        <h2 className="text-2xl font-bold text-gray-800 mb-6">Récapitulatif par point de contrôle</h2>
+        
+        {getSummaryData().length === 0 ? (
+          <div className="text-center py-8 text-gray-500">
+            Aucun problème détecté dans les chambres contrôlées
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {getSummaryData().map(([key, data]) => (
+              <div key={key} className="border border-gray-200 rounded-lg p-4">
+                <div className="flex flex-col md:flex-row md:items-center justify-between mb-4">
+                  <div className="flex-1">
+                    <div className="text-sm text-gray-500">{data.section}</div>
+                    <div className="text-lg font-semibold text-gray-800">{data.item}</div>
+                  </div>
+                  <div className="flex gap-4 mt-2 md:mt-0">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-red-600">{data.unresolvedIssues}</div>
+                      <div className="text-xs text-gray-600">Non résolus</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-orange-600">{data.totalIssues}</div>
+                      <div className="text-xs text-gray-600">Total</div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="border-t border-gray-200 pt-3">
+                  <div className="text-sm font-medium text-gray-700 mb-2">Chambres concernées :</div>
+                  <div className="flex flex-wrap gap-2">
+                    {data.rooms.map((roomData, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => {
+                          const roomIndex = roomList.indexOf(roomData.room);
+                          if (roomIndex !== -1) goToRoom(roomIndex);
+                        }}
+                        className={`px-3 py-1 rounded-md text-sm font-medium transition hover:shadow-md ${
+                          roomData.resolved
+                            ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                            : 'bg-red-100 text-red-700 hover:bg-red-200'
+                        }`}
+                      >
+                        {roomData.room}
+                        {roomData.resolved && ' ✓'}
+                      </button>
+                    ))}
+                  </div>
+                  
+                  {data.rooms.some(r => r.comment) && (
+                    <div className="mt-3">
+                      <div className="text-sm font-medium text-gray-700 mb-2">Commentaires :</div>
+                      <div className="space-y-1">
+                        {data.rooms.filter(r => r.comment).map((roomData, idx) => (
+                          <div key={idx} className="text-sm text-gray-600 bg-gray-50 p-2 rounded">
+                            <span className="font-medium">Ch. {roomData.room}:</span> {roomData.comment}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    )}
+
+    {/* Liste des chambres */}
+    <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+      <h2 className="text-xl font-bold text-gray-800 mb-4">Chambres à contrôler</h2>
+      <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-12 gap-2">
+        {roomList.map((room, index) => {
+          const data = roomsData[room];
+          const isCompleted = data.completed;
+          const isCurrent = index === currentRoomIndex;
+          const stats = getStats(data, data.hasMezzanine);
+          const hasProblems = stats.nonConformes > 0;
+          
+          return (
+            <button
+              key={room}
+              onClick={() => goToRoom(index)}
+              className={`p-3 rounded-lg font-semibold text-sm transition relative ${
+                isCurrent
+                  ? 'bg-blue-600 text-white ring-2 ring-blue-400'
+                  : isCompleted && hasProblems
+                  ? 'bg-red-100 text-red-700 hover:bg-red-200'
+                  : isCompleted
+                  ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              {room}
+              {isCompleted && (
+                <span className="absolute -top-1 -right-1">
+                  {hasProblems ? (
+                    <AlertCircle size={16} className="text-red-600" />
+                  ) : (
+                    <Check size={16} className="text-green-600" />
+                  )}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+
+    {/* Contrôle de la chambre actuelle */}
+    <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+      <div className="flex items-center justify-between mb-6">
+        <button
+          onClick={goToPreviousRoom}
+          disabled={currentRoomIndex === 0}
+          className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed transition"
+        >
+          <ChevronLeft size={24} />
+        </button>
+        
+        <div className="text-center">
+          <h2 className="text-3xl font-bold text-gray-800">Chambre {currentRoom}</h2>
+          <p className="text-sm text-gray-600">
+            {currentRoomIndex + 1} / {roomList.length}
+          </p>
+        </div>
+
+        <button
+          onClick={goToNextRoom}
+          disabled={currentRoomIndex === roomList.length - 1}
+          className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed transition"
+        >
+          <ChevronRight size={24} />
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Inspecteur</label>
+          <input
+            type="text"
+            value={currentData.inspectorName}
+            onChange={(e) => handleInspectorName(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Nom"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Date</label>
+          <input
+            type="date"
+            value={currentData.inspectionDate}
+            onChange={(e) => handleInspectionDate(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+      </div>
+
+      <div className="flex items-center mb-6">
+        <input
+          type="checkbox"
+          id="mezzanine"
+          checked={currentData.hasMezzanine}
+          onChange={(e) => handleMezzanine(e.target.checked)}
+          className="mr-2 h-4 w-4 text-blue-600"
+        />
+        <label htmlFor="mezzanine" className="text-sm font-medium text-gray-700">
+          La chambre possède une mezzanine
+        </label>
+      </div>
+
+      <div className="grid grid-cols-4 gap-3 p-4 bg-gray-50 rounded-lg mb-6">
+        <div className="text-center">
+          <div className="text-2xl font-bold text-gray-600">{currentStats.total}</div>
+          <div className="text-sm text-gray-600">Points</div>
+        </div>
+        <div className="text-center">
+          <div className="text-2xl font-bold text-blue-600">{currentStats.checked}</div>
+          <div className="text-sm text-gray-600">Vérifiés</div>
+        </div>
+        <div className="text-center">
+          <div className="text-2xl font-bold text-green-600">{currentStats.conformes}</div>
+          <div className="text-sm text-gray-600">OK</div>
+        </div>
+        <div className="text-center">
+          <div className="text-2xl font-bold text-red-600">{currentStats.nonConformes}</div>
+          <div className="text-sm text-gray-600">NOK</div>
+        </div>
+      </div>
+
+      <button
+        onClick={markRoomComplete}
+        disabled={currentData.completed}
+        className={`w-full py-3 px-4 rounded-lg font-semibold transition ${
+          currentData.completed
+            ? 'bg-green-100 text-green-700 cursor-not-allowed'
+            : 'bg-blue-600 hover:bg-blue-700 text-white'
+        }`}
+      >
+        {currentData.completed ? '✓ Chambre contrôlée' : 'Marquer comme contrôlée'}
+      </button>
+    </div>
+
+    {/* Checklist */}
+    {Object.entries(initialChecklist).map(([section, items]) => {
+      if (section === 'Mezzanine' && !currentData.hasMezzanine) return null;
+      
+      return (
+        <div key={section} className="bg-white rounded-lg shadow-lg p-6 mb-6">
+          <h2 className="text-2xl font-bold text-gray-800 mb-4 border-b-2 border-blue-500 pb-2">
+            {section}
+          </h2>
+          <div className="space-y-3">
+            {items.map((item, index) => {
+              const key = `${section}-${item}`;
+              const status = currentData.checkStatus[key];
+              const comment = currentData.comments[key] || '';
+              const resolution = currentData.resolutions[key] || {};
+              const hasIssue = status === 'nok' || comment.trim() !== '';
+              
+              return (
+                <div key={index} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition">
+                  <div className="flex flex-col md:flex-row md:items-center gap-4">
+                    <div className="flex-1 font-medium text-gray-700">{item}</div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleCheck(section, item, 'ok')}
+                        className={`px-4 py-2 rounded-md font-medium transition ${
+                          status === 'ok'
+                            ? 'bg-green-500 text-white'
+                            : 'bg-gray-100 text-gray-600 hover:bg-green-100'
+                        }`}
+                      >
+                        ✓ OK
+                      </button>
+                      <button
+                        onClick={() => handleCheck(section, item, 'nok')}
+                        className={`px-4 py-2 rounded-md font-medium transition ${
+                          status === 'nok'
+                            ? 'bg-red-500 text-white'
+                            : 'bg-gray-100 text-gray-600 hover:bg-red-100'
+                        }`}
+                      >
+                        ✗ NOK
+                      </button>
+                      <button
+                        onClick={() => handleCheck(section, item, 'na')}
+                        className={`px-4 py-2 rounded-md font-medium transition ${
+                          status === 'na'
+                            ? 'bg-gray-500 text-white'
+                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        }`}
+                      >
+                        N/A
+                      </button>
+                    </div>
+                  </div>
+                  <input
+                    type="text"
+                    value={comment}
+                    onChange={(e) => handleComment(section, item, e.target.value)}
+                    placeholder="Commentaire..."
+                    className="mt-3 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  
+                  {hasIssue && (
+                    <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="font-semibold text-yellow-800">Suivi de résolution</span>
+                        <button
+                          onClick={() => toggleResolved(section, item)}
+                          className={`px-4 py-2 rounded-md font-medium transition ${
+                            resolution.resolved
+                              ? 'bg-green-500 text-white'
+                              : 'bg-yellow-500 text-white hover:bg-yellow-600'
+                          }`}
+                        >
+                          {resolution.resolved ? '✓ Résolu' : 'Marquer comme résolu'}
+                        </button>
+                      </div>
+                      
+                      {resolution.resolved && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Résolu par</label>
+                            <input
+                              type="text"
+                              value={resolution.resolvedBy || ''}
+                              onChange={(e) => handleResolution(section, item, 'resolvedBy', e.target.value)}
+                              placeholder="Nom de la personne"
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Date de résolution</label>
+                            <input
+                              type="date"
+                              value={resolution.resolvedDate || ''}
+                              onChange={(e) => handleResolution(section, item, 'resolvedDate', e.target.value)}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      );
+    })}
+  </div>
+</div>
+```
+
+);
+};
+
+export default HotelRoomChecklist;
+    </script>
+</body>
+</html>
