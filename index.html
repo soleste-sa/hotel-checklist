@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contrôle Conformité Chambres d'Hôtel</title>
+    <title>Contrôle Conformité Chambres</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -83,17 +83,17 @@
               'Murs état', 'Sol état', 'Ventilation/Aération', 'Poubelle SDB'
             ],
             'WC': [
-              'Cuvette WC état', 'Lunette de toilette', 'Chasse d\'eau fonctionnelle',
+              'Cuvette WC état', 'Lunette de toilette', 'Chasse d eau fonctionnelle',
               'Lumière WC', 'Interrupteur WC', 'Porte WC', 'Murs WC état', 'Sol WC état',
               'Distributeur papier toilette', 'Brosse WC', 'Poubelle'
             ],
             'Chambre': [
               'Roulettes du lit', 'Table de chevet (x2)', 'Lampe de chevet (x2)',
-              'Table d\'appoint', 'Fauteuil(s)', 'TV fonctionnelle', 'Télécommande TV',
+              'Table d appoint', 'Fauteuil(s)', 'TV fonctionnelle', 'Télécommande TV',
               'Bureau/Secrétaire', 'Armoire/Penderie', 'Cintres', 'Coffre-fort',
               'Minibar', 'Bouilloire/Machine à café', 'Téléphone', 'Climatisation/Chauffage',
               'Rideaux/Voilages', 'Fenêtres état', 'Murs état', 'Sol état', 'Poubelle',
-              'Prises électriques fonctionnelles', 'Éclairage principal', 'Porte d\'entrée et serrure'
+              'Prises électriques fonctionnelles', 'Éclairage principal', 'Porte d entrée et serrure'
             ],
             'Terrasse': [
               'Chaise 1', 'Chaise 2', 'Table', 'Cendrier', 'Sol état', 'Balustrade sécurisée'
@@ -295,10 +295,10 @@
           const globalStats = getGlobalStats();
 
           const resetAllData = () => {
-            if (window.confirm('⚠️ ATTENTION : Effacer toutes les données ?')) {
+            if (window.confirm('Effacer toutes les données ?')) {
               localStorage.removeItem('hotel-rooms-data');
               setRoomsData(getInitialData());
-              alert('✓ Données effacées');
+              alert('Données effacées');
             }
           };
 
@@ -327,9 +327,9 @@
                   try {
                     const imported = JSON.parse(event.target.result);
                     setRoomsData(imported);
-                    alert('✓ Données importées');
+                    alert('Données importées');
                   } catch {
-                    alert('⚠ Fichier invalide');
+                    alert('Fichier invalide');
                   }
                 };
                 reader.readAsText(file);
@@ -408,7 +408,7 @@
           };
 
           const exportGlobalReport = () => {
-            let csv = "Chambre,Inspecteur,Date,Section,Élément,Statut,Commentaire,Résolu,Résolu par,Date résolution\n";
+            let csv = "Chambre,Inspecteur,Date,Section,Element,Statut,Commentaire,Resolu,Resolu par,Date resolution\n";
             
             roomList.forEach(room => {
               const data = roomsData[room];
@@ -432,7 +432,7 @@
               });
               
               if (!hasProblems && data.completed) {
-                csv += `"${room}","${data.inspectorName}","${data.inspectionDate}","","Aucun problème","","","","",""\n`;
+                csv += `"${room}","${data.inspectorName}","${data.inspectionDate}","","Aucun probleme","","","","",""\n`;
               }
             });
 
@@ -450,7 +450,7 @@
             const summaryData = getSummaryData();
             const date = new Date().toLocaleDateString('fr-FR');
             
-            let html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Récapitulatif</title><style>body{font-family:Arial;margin:40px}h1{color:#1e40af}.stats{background:#eff6ff;padding:15px;margin:20px 0}.problem{border:1px solid #ddd;padding:15px;margin:10px 0}.badge{display:inline-block;padding:5px 10px;margin:3px;border-radius:5px}.resolved{background:#d1fae5;color:#065f46}.unresolved{background:#fee2e2;color:#991b1b}</style></head><body><h1>Récapitulatif</h1><p>Date: ${date}</p><div class="stats"><strong>${globalStats.totalRooms}</strong> chambres | <strong>${globalStats.completedRooms}</strong> contrôlées | <strong>${globalStats.totalProblems}</strong> problèmes</div>`;
+            let html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Recapitulatif</title><style>body{font-family:Arial;margin:40px}h1{color:#1e40af}.stats{background:#eff6ff;padding:15px;margin:20px 0}.problem{border:1px solid #ddd;padding:15px;margin:10px 0}.badge{display:inline-block;padding:5px 10px;margin:3px;border-radius:5px}.resolved{background:#d1fae5;color:#065f46}.unresolved{background:#fee2e2;color:#991b1b}</style></head><body><h1>Recapitulatif</h1><p>Date: ${date}</p><div class="stats"><strong>${globalStats.totalRooms}</strong> chambres | <strong>${globalStats.completedRooms}</strong> controlees | <strong>${globalStats.totalProblems}</strong> problemes</div>`;
 
             summaryData.forEach(([, data]) => {
               html += `<div class="problem"><strong>${data.section}</strong> - ${data.item}<br><div style="margin-top:10px">`;
@@ -478,12 +478,12 @@
               <div className="max-w-7xl mx-auto">
                 <div className="bg-white rounded-lg shadow p-6 mb-6">
                   <div className="flex items-center justify-between mb-4">
-                    <h1 className="text-2xl font-bold">Contrôle Conformité</h1>
+                    <h1 className="text-2xl font-bold">Controle Conformite</h1>
                     {saveStatus && <span className="text-sm text-green-600">{saveStatus}</span>}
                   </div>
                   
                   <div className="bg-blue-50 p-3 rounded mb-4 text-sm">
-                    💾 Stockage local - Données sauvegardées automatiquement
+                    Stockage local - Donnees sauvegardees automatiquement
                   </div>
                   
                   <div className="grid grid-cols-3 gap-3 p-4 bg-blue-50 rounded mb-4">
@@ -493,11 +493,11 @@
                     </div>
                     <div className="text-center">
                       <div className="text-2xl font-bold text-green-600">{globalStats.completedRooms}</div>
-                      <div className="text-sm">Contrôlées</div>
+                      <div className="text-sm">Controlees</div>
                     </div>
                     <div className="text-center">
                       <div className="text-2xl font-bold text-red-600">{globalStats.totalProblems}</div>
-                      <div className="text-sm">Problèmes</div>
+                      <div className="text-sm">Problemes</div>
                     </div>
                   </div>
 
@@ -508,7 +508,7 @@
 
                   <div className="grid grid-cols-3 gap-2 mb-2">
                     <button onClick={() => setShowSummary(!showSummary)} className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded flex items-center justify-center gap-1">
-                      <BarChart3 size={16} /> Récap
+                      <BarChart3 size={16} /> Recap
                     </button>
                     <button onClick={exportSummaryPDF} className="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 rounded flex items-center justify-center gap-1">
                       <Download size={16} /> PDF
@@ -520,17 +520,17 @@
 
                   <div className="grid grid-cols-2 gap-2">
                     <button onClick={importData} className="bg-cyan-600 hover:bg-cyan-700 text-white py-2 rounded">
-                      📥 Import
+                      Import
                     </button>
                     <button onClick={resetAllData} className="bg-red-600 hover:bg-red-700 text-white py-2 rounded">
-                      🗑️ Reset
+                      Reset
                     </button>
                   </div>
                 </div>
 
                 {showSummary && getSummaryData().length > 0 && (
                   <div className="bg-white rounded-lg shadow p-6 mb-6">
-                    <h2 className="text-xl font-bold mb-4">Récapitulatif</h2>
+                    <h2 className="text-xl font-bold mb-4">Recapitulatif</h2>
                     {getSummaryData().map(([key, data]) => (
                       <div key={key} className="border rounded p-4 mb-4">
                         <div className="flex justify-between mb-2">
@@ -622,7 +622,7 @@
 
                   <div className="flex items-center mb-4">
                     <input type="checkbox" id="mezz" checked={currentData.hasMezzanine} onChange={(e) => handleMezzanine(e.target.checked)} className="mr-2" />
-                    <label htmlFor="mezz" className="text-sm">Possède une mezzanine</label>
+                    <label htmlFor="mezz" className="text-sm">Possede une mezzanine</label>
                   </div>
 
                   <div className="grid grid-cols-4 gap-3 p-4 bg-gray-50 rounded mb-4">
@@ -632,7 +632,7 @@
                     </div>
                     <div className="text-center">
                       <div className="text-2xl font-bold text-blue-600">{currentStats.checked}</div>
-                      <div className="text-sm">Vérifiés</div>
+                      <div className="text-sm">Verifies</div>
                     </div>
                     <div className="text-center">
                       <div className="text-2xl font-bold text-green-600">{currentStats.conformes}</div>
@@ -645,30 +645,30 @@
                   </div>
 
                   <button onClick={markRoomComplete} disabled={currentData.completed} className={`w-full py-3 rounded font-semibold ${currentData.completed ? 'bg-green-100 text-green-700' : 'bg-blue-600 text-white hover:bg-blue-700'}`}>
-                    {currentData.completed ? '✓ Contrôlée' : 'Marquer comme contrôlée'}
-                  </button>
-                </div>
-
-                {Object.entries(initialChecklist).map(([section, items]) => {
-                  if (section === 'Mezzanine' && !currentData.hasMezzanine) return null;
-                  
-                  return (
-                    <div key={section} className="bg-white rounded-lg shadow p-6 mb-6">
-                      <h2 className="text-xl font-bold mb-4 border-b-2 border-blue-500 pb-2">{section}</h2>
-                      <div className="space-y-3">
-                        {items.map((item, index) => {
-const key = ${section}-${item};
-const status = currentData.checkStatus[key];
-const comment = currentData.comments[key] || '';
-const resolution = currentData.resolutions[key] || {};
-const hasIssue = status === 'nok' || comment.trim() !== '';
-                    return (
+{currentData.completed ? 'Controlee' : 'Marquer comme controlee'}
+</button>
+</div>
+{Object.entries(initialChecklist).map(([section, items]) => {
+              if (section === 'Mezzanine' && !currentData.hasMezzanine) return null;
+              
+              return (
+                <div key={section} className="bg-white rounded-lg shadow p-6 mb-6">
+                  <h2 className="text-xl font-bold mb-4 border-b-2 border-blue-500 pb-2">{section}</h2>
+                  <div className="space-y-3">
+                    {items.map((item, index) => {
+                      const key = `${section}-${item}`;
+                      const status = currentData.checkStatus[key];
+                      const comment = currentData.comments[key] || '';
+                      const resolution = currentData.resolutions[key] || {};
+                      const hasIssue = status === 'nok' || comment.trim() !== '';
+                      
+                      return (
                         <div key={index} className="border rounded p-4">
                           <div className="flex flex-col md:flex-row md:items-center gap-4 mb-3">
                             <div className="flex-1 font-medium">{item}</div>
                             <div className="flex gap-2">
-                              <button onClick={() => handleCheck(section, item, 'ok')} className={`px-4 py-2 rounded font-medium ${status === 'ok' ? 'bg-green-500 text-white' : 'bg-gray-100'}`}>✓</button>
-                              <button onClick={() => handleCheck(section, item, 'nok')} className={`px-4 py-2 rounded font-medium ${status === 'nok' ? 'bg-red-500 text-white' : 'bg-gray-100'}`}>✗</button>
+                              <button onClick={() => handleCheck(section, item, 'ok')} className={`px-4 py-2 rounded font-medium ${status === 'ok' ? 'bg-green-500 text-white' : 'bg-gray-100'}`}>OK</button>
+                              <button onClick={() => handleCheck(section, item, 'nok')} className={`px-4 py-2 rounded font-medium ${status === 'nok' ? 'bg-red-500 text-white' : 'bg-gray-100'}`}>NOK</button>
                               <button onClick={() => handleCheck(section, item, 'na')} className={`px-4 py-2 rounded font-medium ${status === 'na' ? 'bg-gray-500 text-white' : 'bg-gray-100'}`}>N/A</button>
                             </div>
                           </div>
@@ -677,15 +677,15 @@ const hasIssue = status === 'nok' || comment.trim() !== '';
                           {hasIssue && (
                             <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded">
                               <div className="flex justify-between mb-3">
-                                <span className="font-semibold text-yellow-800">Résolution</span>
+                                <span className="font-semibold text-yellow-800">Resolution</span>
                                 <button onClick={() => toggleResolved(section, item)} className={`px-4 py-2 rounded font-medium ${resolution.resolved ? 'bg-green-500 text-white' : 'bg-yellow-500 text-white'}`}>
-                                  {resolution.resolved ? '✓ Résolu' : 'Marquer résolu'}
+                                  {resolution.resolved ? 'Resolu' : 'Marquer resolu'}
                                 </button>
                               </div>
                               {resolution.resolved && (
                                 <div className="grid grid-cols-2 gap-3">
                                   <div>
-                                    <label className="block text-sm mb-1">Résolu par</label>
+                                    <label className="block text-sm mb-1">Resolu par</label>
                                     <input type="text" value={resolution.resolvedBy || ''} onChange={(e) => handleResolution(section, item, 'resolvedBy', e.target.value)} className="w-full px-3 py-2 border rounded" />
                                   </div>
                                   <div>
