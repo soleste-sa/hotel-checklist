@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contrôle Conformité Chambres d'Hôtel</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        const Download = ({ size = 20 }) => (
+          <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+          </svg>
+        );
+        
+        const ChevronLeft = ({ size = 24 }) => (
+          <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M15 18l-6-6 6-6"/>
+          </svg>
+        );
+        
+        const ChevronRight = ({ size = 24 }) => (
+          <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M9 18l6-6-6-6"/>
+          </svg>
+        );
+        
+        const Check = ({ size = 16, className = "" }) => (
+          <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
+            <path d="M20 6L9 17l-5-5"/>
+          </svg>
+        );
+        
+        const AlertCircle = ({ size = 16, className = "" }) => (
+          <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+        );
+        
+        const BarChart3 = ({ size = 20 }) => (
+          <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M3 3v18h18"/>
+            <path d="M18 17V9"/>
+            <path d="M13 17V5"/>
+            <path d="M8 17v-3"/>
+          </svg>
+        );
+
+        const HotelRoomChecklist = () => {
+          const generateRoomList = () => {
+            const rooms = [];
+            for (let i = 1; i <= 12; i++) {
+              rooms.push(String(i).padStart(3, '0'));
+            }
+            for (let i = 101; i <= 117; i++) {
+              rooms.push(String(i));
+            }
+            for (let i = 201; i <= 211; i++) {
+              rooms.push(String(i));
+            }
+            return rooms;
+          };
+
+          const roomList = generateRoomList();
+          const [currentRoomIndex, setCurrentRoomIndex] = useState(0);
+          const [showSummary, setShowSummary] = useState(false);
+          const [saveStatus, setSaveStatus] = useState(null);
+
+          const initialChecklist = {
+            'Salle de bain': [
+              'Douche/Baignoire état', 'Robinetterie fonctionnelle', 'Pommeau de douche',
+              'Rideau/Paroi de douche', 'Lavabo état', 'Miroir état', 'Éclairage fonctionnel',
+              'Interrupteur', 'Sèche-cheveux', 'Radiateur', 'Distributeur savon',
+              'Murs état', 'Sol état', 'Ventilation/Aération', 'Poubelle SDB'
+            ],
+            'WC': [
+              'Cuvette WC état', 'Lunette de toilette', 'Chasse d\'eau fonctionnelle',
+              'Lumière WC', 'Interrupteur WC', 'Porte WC', 'Murs WC état', 'Sol WC état',
+              'Distributeur papier toilette', 'Brosse WC', 'Poubelle'
+            ],
+            'Chambre': [
+              'Roulettes du lit', 'Table de chevet (x2)', 'Lampe de chevet (x2)',
+              'Table d\'appoint', 'Fauteuil(s)', 'TV fonctionnelle', 'Télécommande TV',
+              'Bureau/Secrétaire', 'Armoire/Penderie', 'Cintres', 'Coffre-fort',
+              'Minibar', 'Bouilloire/Machine à café', 'Téléphone', 'Climatisation/Chauffage',
+              'Rideaux/Voilages', 'Fenêtres état', 'Murs état', 'Sol état', 'Poubelle',
+              'Prises électriques fonctionnelles', 'Éclairage principal', 'Porte d\'entrée et serrure'
+            ],
+            'Terrasse': [
+              'Chaise 1', 'Chaise 2', 'Table', 'Cendrier', 'Sol état', 'Balustrade sécurisée'
+            ],
+            'Mezzanine': [
+              'Lit/Couchage état', 'Literie complète', 'Escalier sécurisé',
+              'Garde-corps', 'Éclairage', 'Sol état', 'Rangement'
+            ]
+          };
+
+          const getInitialData = () => {
+            const initial = {};
+            roomList.forEach(room => {
+              initial[room] = {
+                hasMezzanine: false,
+                checkStatus: {},
+                comments: {},
+                completed: false,
+                inspectorName: '',
+                inspectionDate: new Date().toISOString().split('T')[0],
+                resolutions: {}
+              };
+            });
+            return initial;
+          };
+
+          const loadFromLocalStorage = () => {
+            try {
+              const saved = localStorage.getItem('hotel-rooms-data');
+              if (saved) {
+                return JSON.parse(saved);
+              }
+            } catch (error) {
+              console.error('Erreur:', error);
+            }
+            return getInitialData();
+          };
+
+          const [roomsData, setRoomsData] = useState(loadFromLocalStorage);
+
+          useEffect(() => {
+            try {
+              localStorage.setItem('hotel-rooms-data', JSON.stringify(roomsData));
+              setSaveStatus('✓ Sauvegardé');
+              setTimeout(() => setSaveStatus(null), 2000);
+            } catch (error) {
+              setSaveStatus('⚠ Erreur');
+            }
+          }, [roomsData]);
+
+          const currentRoom = roomList[currentRoomIndex];
+          const currentData = roomsData[currentRoom];
+
+          const handleCheck = (section, item, status) => {
+            setRoomsData(prev => ({
+              ...prev,
+              [currentRoom]: {
+                ...prev[currentRoom],
+                checkStatus: {
+                  ...prev[currentRoom].checkStatus,
+                  [`${section}-${item}`]: status
+                }
+              }
+            }));
+          };
+
+          const handleComment = (section, item, comment) => {
+            setRoomsData(prev => ({
+              ...prev,
+              [currentRoom]: {
+                ...prev[currentRoom],
+                comments: {
+                  ...prev[currentRoom].comments,
+                  [`${section}-${item}`]: comment
+                }
+              }
+            }));
+          };
+
+          const handleMezzanine = (value) => {
+            setRoomsData(prev => ({
+              ...prev,
+              [currentRoom]: {
+                ...prev[currentRoom],
+                hasMezzanine: value
+              }
+            }));
+          };
+
+          const handleInspectorName = (value) => {
+            setRoomsData(prev => ({
+              ...prev,
+              [currentRoom]: {
+                ...prev[currentRoom],
+                inspectorName: value
+              }
+            }));
+          };
+
+          const handleInspectionDate = (value) => {
+            setRoomsData(prev => ({
+              ...prev,
+              [currentRoom]: {
+                ...prev[currentRoom],
+                inspectionDate: value
+              }
+            }));
+          };
+
+          const handleResolution = (section, item, field, value) => {
+            const key = `${section}-${item}`;
+            setRoomsData(prev => ({
+              ...prev,
+              [currentRoom]: {
+                ...prev[currentRoom],
+                resolutions: {
+                  ...prev[currentRoom].resolutions,
+                  [key]: {
+                    ...(prev[currentRoom].resolutions[key] || {}),
+                    [field]: value
+                  }
+                }
+              }
+            }));
+          };
+
+          const toggleResolved = (section, item) => {
+            const key = `${section}-${item}`;
+            const currentResolution = currentData.resolutions[key] || {};
+            const isResolved = currentResolution.resolved || false;
+            
+            setRoomsData(prev => ({
+              ...prev,
+              [currentRoom]: {
+                ...prev[currentRoom],
+                resolutions: {
+                  ...prev[currentRoom].resolutions,
+                  [key]: {
+                    ...currentResolution,
+                    resolved: !isResolved,
+                    resolvedDate: !isResolved ? new Date().toISOString().split('T')[0] : (currentResolution.resolvedDate || ''),
+                    resolvedBy: currentResolution.resolvedBy || ''
+                  }
+                }
+              }
+            }));
+          };
+
+          const markRoomComplete = () => {
+            setRoomsData(prev => ({
+              ...prev,
+              [currentRoom]: {
+                ...prev[currentRoom],
+                completed: true
+              }
+            }));
+          };
+
+          const getStats = (roomData, hasMezzanine) => {
+            let total = 0;
+            let checked = 0;
+            let conformes = 0;
+            let nonConformes = 0;
+
+            Object.entries(initialChecklist).forEach(([section, items]) => {
+              if (section === 'Mezzanine' && !hasMezzanine) return;
+              items.forEach(item => {
+                total++;
+                const key = `${section}-${item}`;
+                const status = roomData.checkStatus[key];
+                if (status) {
+                  checked++;
+                  if (status === 'ok') conformes++;
+                  if (status === 'nok') nonConformes++;
+                }
+              });
+            });
+
+            return { total, checked, conformes, nonConformes };
+          };
+
+          const currentStats = getStats(currentData, currentData.hasMezzanine);
+
+          const getGlobalStats = () => {
+            let totalRooms = roomList.length;
+            let completedRooms = 0;
+            let totalProblems = 0;
+
+            roomList.forEach(room => {
+              const data = roomsData[room];
+              if (data.completed) completedRooms++;
+              const stats = getStats(data, data.hasMezzanine);
+              totalProblems += stats.nonConformes;
+            });
+
+            return { totalRooms, completedRooms, totalProblems };
+          };
+
+          const globalStats = getGlobalStats();
+
+          const resetAllData = () => {
+            if (window.confirm('⚠️ ATTENTION : Effacer toutes les données ?')) {
+              localStorage.removeItem('hotel-rooms-data');
+              setRoomsData(getInitialData());
+              alert('✓ Données effacées');
+            }
+          };
+
+          const exportData = () => {
+            const dataStr = JSON.stringify(roomsData, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `hotel-data-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+          };
+
+          const importData = () => {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'application/json';
+            input.onchange = (e) => {
+              const file = e.target.files[0];
+              if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                  try {
+                    const imported = JSON.parse(event.target.result);
+                    setRoomsData(imported);
+                    alert('✓ Données importées');
+                  } catch {
+                    alert('⚠ Fichier invalide');
+                  }
+                };
+                reader.readAsText(file);
+              }
+            };
+            input.click();
+          };
+
+          const goToNextRoom = () => {
+            if (currentRoomIndex < roomList.length - 1) {
+              setCurrentRoomIndex(currentRoomIndex + 1);
+            }
+          };
+
+          const goToPreviousRoom = () => {
+            if (currentRoomIndex > 0) {
+              setCurrentRoomIndex(currentRoomIndex - 1);
+            }
+          };
+
+          const goToRoom = (index) => {
+            setCurrentRoomIndex(index);
+            setShowSummary(false);
+          };
+
+          const getSummaryData = () => {
+            const summary = {};
+            
+            Object.entries(initialChecklist).forEach(([section, items]) => {
+              items.forEach(item => {
+                const key = `${section}-${item}`;
+                summary[key] = {
+                  section,
+                  item,
+                  totalIssues: 0,
+                  unresolvedIssues: 0,
+                  rooms: []
+                };
+              });
+            });
+
+            roomList.forEach(room => {
+              const data = roomsData[room];
+              
+              Object.entries(initialChecklist).forEach(([section, items]) => {
+                if (section === 'Mezzanine' && !data.hasMezzanine) return;
+                
+                items.forEach(item => {
+                  const key = `${section}-${item}`;
+                  const status = data.checkStatus[key];
+                  const comment = data.comments[key] || '';
+                  const resolution = data.resolutions[key] || {};
+                  
+                  if (status === 'nok' || comment.trim() !== '') {
+                    summary[key].totalIssues++;
+                    summary[key].rooms.push({
+                      room,
+                      status,
+                      comment,
+                      resolved: resolution.resolved || false,
+                      resolvedBy: resolution.resolvedBy || '',
+                      resolvedDate: resolution.resolvedDate || ''
+                    });
+                    
+                    if (!resolution.resolved) {
+                      summary[key].unresolvedIssues++;
+                    }
+                  }
+                });
+              });
+            });
+
+            return Object.entries(summary)
+              .filter(([, data]) => data.totalIssues > 0)
+              .sort((a, b) => b[1].unresolvedIssues - a[1].unresolvedIssues);
+          };
+
+          const exportGlobalReport = () => {
+            let csv = "Chambre,Inspecteur,Date,Section,Élément,Statut,Commentaire,Résolu,Résolu par,Date résolution\n";
+            
+            roomList.forEach(room => {
+              const data = roomsData[room];
+              let hasProblems = false;
+              
+              Object.entries(initialChecklist).forEach(([section, items]) => {
+                if (section === 'Mezzanine' && !data.hasMezzanine) return;
+                
+                items.forEach(item => {
+                  const key = `${section}-${item}`;
+                  const status = data.checkStatus[key];
+                  const comment = data.comments[key] || '';
+                  const resolution = data.resolutions[key] || {};
+                  
+                  if (status === 'nok' || comment.trim() !== '') {
+                    hasProblems = true;
+                    const statusText = status === 'nok' ? 'NOK' : status === 'ok' ? 'OK' : 'N/A';
+                    csv += `"${room}","${data.inspectorName}","${data.inspectionDate}","${section}","${item}","${statusText}","${comment}","${resolution.resolved ? 'Oui' : 'Non'}","${resolution.resolvedBy || ''}","${resolution.resolvedDate || ''}"\n`;
+                  }
+                });
+              });
+              
+              if (!hasProblems && data.completed) {
+                csv += `"${room}","${data.inspectorName}","${data.inspectionDate}","","Aucun problème","","","","",""\n`;
+              }
+            });
+
+            const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.href = url;
+            link.download = `Rapport_${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+          };
+
+          const exportSummaryPDF = () => {
+            const summaryData = getSummaryData();
+            const date = new Date().toLocaleDateString('fr-FR');
+            
+            let html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Récapitulatif</title><style>body{font-family:Arial;margin:40px}h1{color:#1e40af}.stats{background:#eff6ff;padding:15px;margin:20px 0}.problem{border:1px solid #ddd;padding:15px;margin:10px 0}.badge{display:inline-block;padding:5px 10px;margin:3px;border-radius:5px}.resolved{background:#d1fae5;color:#065f46}.unresolved{background:#fee2e2;color:#991b1b}</style></head><body><h1>Récapitulatif</h1><p>Date: ${date}</p><div class="stats"><strong>${globalStats.totalRooms}</strong> chambres | <strong>${globalStats.completedRooms}</strong> contrôlées | <strong>${globalStats.totalProblems}</strong> problèmes</div>`;
+
+            summaryData.forEach(([, data]) => {
+              html += `<div class="problem"><strong>${data.section}</strong> - ${data.item}<br><div style="margin-top:10px">`;
+              data.rooms.forEach(r => {
+                html += `<span class="badge ${r.resolved ? 'resolved' : 'unresolved'}">${r.room}</span>`;
+              });
+              html += `</div></div>`;
+            });
+
+            html += `</body></html>`;
+
+            const blob = new Blob([html], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `Recap_${new Date().toISOString().split('T')[0]}.html`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+          };
+
+          return (
+            <div className="min-h-screen bg-gray-50 p-4">
+              <div className="max-w-7xl mx-auto">
+                <div className="bg-white rounded-lg shadow p-6 mb-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h1 className="text-2xl font-bold">Contrôle Conformité</h1>
+                    {saveStatus && <span className="text-sm text-green-600">{saveStatus}</span>}
+                  </div>
+                  
+                  <div className="bg-blue-50 p-3 rounded mb-4 text-sm">
+                    💾 Stockage local - Données sauvegardées automatiquement
+                  </div>
+                  
+                  <div className="grid grid-cols-3 gap-3 p-4 bg-blue-50 rounded mb-4">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-blue-600">{globalStats.totalRooms}</div>
+                      <div className="text-sm">Chambres</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-green-600">{globalStats.completedRooms}</div>
+                      <div className="text-sm">Contrôlées</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-red-600">{globalStats.totalProblems}</div>
+                      <div className="text-sm">Problèmes</div>
+                    </div>
+                  </div>
+
+                  <button onClick={exportGlobalReport} className="w-full mb-2 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-4 rounded flex items-center justify-center gap-2">
+                    <Download size={20} />
+                    Rapport CSV
+                  </button>
+
+                  <div className="grid grid-cols-3 gap-2 mb-2">
+                    <button onClick={() => setShowSummary(!showSummary)} className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded flex items-center justify-center gap-1">
+                      <BarChart3 size={16} /> Récap
+                    </button>
+                    <button onClick={exportSummaryPDF} className="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 rounded flex items-center justify-center gap-1">
+                      <Download size={16} /> PDF
+                    </button>
+                    <button onClick={exportData} className="bg-orange-600 hover:bg-orange-700 text-white font-semibold py-3 rounded flex items-center justify-center gap-1">
+                      <Download size={16} /> Export
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <button onClick={importData} className="bg-cyan-600 hover:bg-cyan-700 text-white py-2 rounded">
+                      📥 Import
+                    </button>
+                    <button onClick={resetAllData} className="bg-red-600 hover:bg-red-700 text-white py-2 rounded">
+                      🗑️ Reset
+                    </button>
+                  </div>
+                </div>
+
+                {showSummary && getSummaryData().length > 0 && (
+                  <div className="bg-white rounded-lg shadow p-6 mb-6">
+                    <h2 className="text-xl font-bold mb-4">Récapitulatif</h2>
+                    {getSummaryData().map(([key, data]) => (
+                      <div key={key} className="border rounded p-4 mb-4">
+                        <div className="flex justify-between mb-2">
+                          <div>
+                            <div className="text-sm text-gray-500">{data.section}</div>
+                            <div className="font-semibold">{data.item}</div>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-2xl font-bold text-red-600">{data.unresolvedIssues}</div>
+                            <div className="text-xs">sur {data.totalIssues}</div>
+                          </div>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {data.rooms.map((r, i) => (
+                            <button
+                              key={i}
+                              onClick={() => goToRoom(roomList.indexOf(r.room))}
+                              className={`px-3 py-1 rounded text-sm ${
+                                r.resolved ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                              }`}
+                            >
+                              {r.room}{r.resolved && ' ✓'}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <div className="bg-white rounded-lg shadow p-6 mb-6">
+                  <h2 className="font-bold mb-4">Chambres</h2>
+                  <div className="grid grid-cols-6 sm:grid-cols-10 gap-2">
+                    {roomList.map((room, index) => {
+                      const data = roomsData[room];
+                      const isCurrent = index === currentRoomIndex;
+                      const stats = getStats(data, data.hasMezzanine);
+                      
+                      return (
+                        <button
+                          key={room}
+                          onClick={() => goToRoom(index)}
+                          className={`p-3 rounded font-semibold text-sm relative ${
+                            isCurrent ? 'bg-blue-600 text-white' :
+                            data.completed && stats.nonConformes > 0 ? 'bg-red-100 text-red-700' :
+                            data.completed ? 'bg-green-100 text-green-700' :
+                            'bg-gray-100'
+                          }`}
+                        >
+                          {room}
+                          {data.completed && (
+                            <span className="absolute -top-1 -right-1">
+                              {stats.nonConformes > 0 ? 
+                                <AlertCircle size={14} className="text-red-600" /> : 
+                                <Check size={14} className="text-green-600" />
+                              }
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-lg shadow p-6 mb-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <button onClick={goToPreviousRoom} disabled={currentRoomIndex === 0} className="p-2 rounded bg-gray-100 disabled:opacity-30">
+                      <ChevronLeft size={24} />
+                    </button>
+                    <div className="text-center">
+                      <h2 className="text-3xl font-bold">Chambre {currentRoom}</h2>
+                      <p className="text-sm text-gray-600">{currentRoomIndex + 1} / {roomList.length}</p>
+                    </div>
+                    <button onClick={goToNextRoom} disabled={currentRoomIndex === roomList.length - 1} className="p-2 rounded bg-gray-100 disabled:opacity-30">
+                      <ChevronRight size={24} />
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Inspecteur</label>
+                      <input type="text" value={currentData.inspectorName} onChange={(e) => handleInspectorName(e.target.value)} className="w-full px-3 py-2 border rounded" placeholder="Nom" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Date</label>
+                      <input type="date" value={currentData.inspectionDate} onChange={(e) => handleInspectionDate(e.target.value)} className="w-full px-3 py-2 border rounded" />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center mb-4">
+                    <input type="checkbox" id="mezz" checked={currentData.hasMezzanine} onChange={(e) => handleMezzanine(e.target.checked)} className="mr-2" />
+                    <label htmlFor="mezz" className="text-sm">Possède une mezzanine</label>
+                  </div>
+
+                  <div className="grid grid-cols-4 gap-3 p-4 bg-gray-50 rounded mb-4">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold">{currentStats.total}</div>
+                      <div className="text-sm">Points</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-blue-600">{currentStats.checked}</div>
+                      <div className="text-sm">Vérifiés</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-green-600">{currentStats.conformes}</div>
+                      <div className="text-sm">OK</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-red-600">{currentStats.nonConformes}</div>
+                      <div className="text-sm">NOK</div>
+                    </div>
+                  </div>
+
+                  <button onClick={markRoomComplete} disabled={currentData.completed} className={`w-full py-3 rounded font-semibold ${currentData.completed ? 'bg-green-100 text-green-700' : 'bg-blue-600 text-white hover:bg-blue-700'}`}>
+                    {currentData.completed ? '✓ Contrôlée' : 'Marquer comme contrôlée'}
+                  </button>
+                </div>
+
+                {Object.entries(initialChecklist).map(([section, items]) => {
+                  if (section === 'Mezzanine' && !currentData.hasMezzanine) return null;
+                  
+                  return (
+                    <div key={section} className="bg-white rounded-lg shadow p-6 mb-6">
+                      <h2 className="text-xl font-bold mb-4 border-b-2 border-blue-500 pb-2">{section}</h2>
+                      <div className="space-y-3">
+                        {items.map((item, index) => {
+const key = ${section}-${item};
+const status = currentData.checkStatus[key];
+const comment = currentData.comments[key] || '';
+const resolution = currentData.resolutions[key] || {};
+const hasIssue = status === 'nok' || comment.trim() !== '';
+                    return (
+                        <div key={index} className="border rounded p-4">
+                          <div className="flex flex-col md:flex-row md:items-center gap-4 mb-3">
+                            <div className="flex-1 font-medium">{item}</div>
+                            <div className="flex gap-2">
+                              <button onClick={() => handleCheck(section, item, 'ok')} className={`px-4 py-2 rounded font-medium ${status === 'ok' ? 'bg-green-500 text-white' : 'bg-gray-100'}`}>✓</button>
+                              <button onClick={() => handleCheck(section, item, 'nok')} className={`px-4 py-2 rounded font-medium ${status === 'nok' ? 'bg-red-500 text-white' : 'bg-gray-100'}`}>✗</button>
+                              <button onClick={() => handleCheck(section, item, 'na')} className={`px-4 py-2 rounded font-medium ${status === 'na' ? 'bg-gray-500 text-white' : 'bg-gray-100'}`}>N/A</button>
+                            </div>
+                          </div>
+                          <input type="text" value={comment} onChange={(e) => handleComment(section, item, e.target.value)} placeholder="Commentaire..." className="w-full px-3 py-2 border rounded" />
+                          
+                          {hasIssue && (
+                            <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded">
+                              <div className="flex justify-between mb-3">
+                                <span className="font-semibold text-yellow-800">Résolution</span>
+                                <button onClick={() => toggleResolved(section, item)} className={`px-4 py-2 rounded font-medium ${resolution.resolved ? 'bg-green-500 text-white' : 'bg-yellow-500 text-white'}`}>
+                                  {resolution.resolved ? '✓ Résolu' : 'Marquer résolu'}
+                                </button>
+                              </div>
+                              {resolution.resolved && (
+                                <div className="grid grid-cols-2 gap-3">
+                                  <div>
+                                    <label className="block text-sm mb-1">Résolu par</label>
+                                    <input type="text" value={resolution.resolvedBy || ''} onChange={(e) => handleResolution(section, item, 'resolvedBy', e.target.value)} className="w-full px-3 py-2 border rounded" />
+                                  </div>
+                                  <div>
+                                    <label className="block text-sm mb-1">Date</label>
+                                    <input type="date" value={resolution.resolvedDate || ''} onChange={(e) => handleResolution(section, item, 'resolvedDate', e.target.value)} className="w-full px-3 py-2 border rounded" />
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      );
+    };
+
+    ReactDOM.render(<HotelRoomChecklist />, document.getElementById('root'));
+</script>
